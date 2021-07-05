@@ -1,0 +1,177 @@
+/*******************************************************************************************
+
+  SIMPL+ Module Information
+
+  System Name:		Schedule		
+  Programmer:			Anthony C
+  Comments:
+					This exists to send an On signal at a specified time and 
+					an Off signal at another specified time.
+
+          It's nonvolatile so as long as you don't move it around it will remember its state
+          across compiles and reboots.
+
+					Tabs are 2 spaces
+          
+*******************************************************************************************/
+
+
+/*******************************************************************************************
+
+	Compiler Directives
+
+*******************************************************************************************/
+#CATEGORY "16" // Time/Date
+#DEFAULT_NONVOLATILE
+#ENABLE_TRACE
+
+/*******************************************************************************************
+
+	DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
+
+*******************************************************************************************/
+digital_input onHourUp, onHourDown, onMinuteUp, onMinuteDown, _skip_;
+digital_input offHourUp, offHourDown, offMinuteUp, offMinuteDown, _skip_;
+digital_input checkTime;
+
+digital_output onPulse, offPulse;
+string_output onTime, offTime;
+
+/*******************************************************************************************
+
+  LOCAL VARIABLES
+
+*******************************************************************************************/
+signed_integer onHour, onMinute, offHour, offMinute;
+string moduleName[13];
+
+/*******************************************************************************************
+
+	Includes
+
+*******************************************************************************************/
+
+#user_library "Logging"
+
+/*******************************************************************************************
+
+  Function Definitions
+
+*******************************************************************************************/
+
+function updateTimes() {
+	makestring(onTime, "%d:%02d", onHour, onMinute);
+  makestring(offTime,"%d:%02d", offHour, offMinute);
+}
+
+function defaultTimes() {
+  onHour = 8;
+
+  onMinute = 0;
+
+  offHour = 8;
+
+  offMinute = 0;
+}
+
+
+
+/*******************************************************************************************
+
+  Event Handlers
+  
+*******************************************************************************************/
+
+push onHourUp {
+  onHour= onHour + 1;
+
+  if(onHour > 23) {
+    onHour = 0;
+  }
+  updateTimes();
+}
+
+push onHourDown {
+  onHour = onHour - 1;
+  if(onHour < 0) {
+    onHour = 23;
+  }
+  updateTimes();
+}
+
+push onMinuteUp {
+  onMinute= onMinute + 1;
+  if(onMinute > 59) {
+    onMinute = 0;
+  }
+  updateTimes();
+}
+
+push onMinuteDown {
+  onMinute = onMinute - 1;
+  if(onMinute < 0) {
+    onMinute = 59;
+  }
+  updateTimes();
+}
+
+push offHourUp {
+  offHour= offHour + 1;
+  if(offHour > 23) {
+    offHour = 0;
+  }
+  updateTimes();
+}
+
+push offHourDown {
+  offHour = offHour - 1;
+  if(offHour < 0) {
+    offHour = 23;
+  }
+  updateTimes();
+}
+
+push offMinuteUp {
+  offMinute = offMinute + 1;
+  if(offMinute > 59) {
+    offMinute = 0;
+  }
+  updateTimes();
+}
+
+push offMinuteDown {
+  offMinute = offMinute - 1;
+  if(offMinute < 0) {
+    offMinute = 59;
+  }
+  updateTimes();
+}
+
+push checkTime {
+	if(GetHourNum() = offHour) {
+		log(moduleName, "Turn off this hour\n");
+		if(GetMinutesNum() = offMinute) {
+			log(moduleName, "Turn off now\n");
+			pulse(2, offPulse);
+		}
+	}
+	
+	if(GetHourNum() = onHour) {
+		log(moduleName, "Turn on this hour\n");
+		if(GetMinutesNum() = onMinute) {
+			log(moduleName, "Turn on now\n");
+			pulse(2, onPulse);
+		}
+	}
+}
+
+/*******************************************************************************************
+
+  Main Function
+
+*******************************************************************************************/
+Function Main() {
+  moduleName = "Schedule.usp";
+  // defaultTimes(); 
+  updateTimes();
+}

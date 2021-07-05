@@ -1,0 +1,103 @@
+/*******************************************************************************************
+
+  SIMPL+ Module Information
+
+  System Name:		Time Extractor		
+  Programmer:			Anthony C
+  Comments:
+          This exists to take in a string of a time such as 8:00pm 
+            and set the corresponding analog values.
+
+          Tabs are 2 spaces
+
+*******************************************************************************************/
+
+
+/*******************************************************************************************
+
+	Compiler Directives
+
+*******************************************************************************************/
+#CATEGORY "16" // Time/Date
+#DEFAULT_VOLATILE
+#ENABLE_TRACE
+
+/*******************************************************************************************
+
+	DIGITAL, ANALOG and SERIAL INPUTS and OUTPUTS
+
+*******************************************************************************************/
+string_input timeString[16];
+
+analog_output hour, minute;
+
+/*******************************************************************************************
+
+  LOCAL VARIABLES
+
+*******************************************************************************************/
+string moduleName[13];
+
+/*******************************************************************************************
+
+	Includes
+
+*******************************************************************************************/
+
+#user_library "Logging"
+
+/*******************************************************************************************
+
+  Function Definitions
+
+*******************************************************************************************/
+
+function processTimeChange(string input) {
+  integer colon;
+
+  integer hours;
+  integer minutes;
+  string ampm[2];
+  
+  log(moduleName, "Finding colon\n");
+  colon = find(":",input);
+
+  log(moduleName, "Finding hours\n");
+  hours = atoi(left(input, colon));
+  log(moduleName, itoa(hours));
+
+  log(moduleName, "Finding Minutes\n");
+  minutes = atoi(mid(input, colon+1, 2));
+  log(moduleName, itoa(minutes));
+
+  log(moduleName, "Getting AMPM");
+  ampm = lower(right(input, 2));
+
+  if(find("pm", ampm) > 0) {
+    log(moduleName, "Adding 12 hours");
+    hours = hours + 12;
+  }
+      
+  hour = hours;
+  minute = minutes;
+}
+
+/*******************************************************************************************
+
+  Event Handlers
+  
+*******************************************************************************************/
+
+change timeString
+{
+  processTimeChange(timeString);
+}
+
+/*******************************************************************************************
+
+  Main Function
+
+*******************************************************************************************/
+Function Main() {
+    moduleName = "timeExtractor.usp";
+}

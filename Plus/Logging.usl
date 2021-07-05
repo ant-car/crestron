@@ -1,0 +1,16 @@
+/*******************************************************************************************
+
+  SIMPL+ Include Information
+
+  System Name:		Logging
+  Programmer:			Anthony C
+  Comments:
+          A simple logging function that adds the symbol location to any message.
+
+          Tabs are 2 spaces
+
+*******************************************************************************************/
+
+function log(string moduleName, string message) {
+	print("%s at %s: %s\n", moduleName, GetSymbolInstanceName(), message);
+}
